@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopSense — Multi-Vendor Commerce Platform</title>
+    <link rel="stylesheet" href="/frontend/css/style.css?v=5">
+</head>
+<body>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Brand Identity Header -->
+        <div class="auth-brand">
+            <div class="brand-gem">💎</div>
+            <span class="brand-name">ShopSense</span>
+        </div>
+
+        <h1 class="auth-title">Sign In to Platform</h1>
+        <p class="auth-desc">Select your workspace access level to continue</p>
+
+        <!-- Role Selector Slider -->
+        <div class="role-slider">
+            <button type="button" class="role-btn active" id="btnVendorRole" onclick="setRole('vendor')">Vendor Workspace</button>
+            <button type="button" class="role-btn" id="btnAdminRole" onclick="setRole('admin')">Admin Control</button>
+        </div>
+
+        <!-- Alert Notice -->
+        <div id="authAlert" style="display: none; padding: 12px; margin-bottom: 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500;"></div>
+
+        <!-- Login Form -->
+        <form id="authForm" onsubmit="executeAuth(event)">
+            <div class="input-group">
+                <label class="input-label" for="loginEmail">Email Address</label>
+                <input type="email" id="loginEmail" class="custom-input" placeholder="vendor@shopsense.com" required>
+            </div>
+
+            <div class="input-group">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label class="input-label" for="loginPassword">Account Password</label>
+                    <a href="#" onclick="openForgotPasswordModal(event)" style="font-size: 11px; color: var(--primary); text-decoration: none; font-weight: 600;">Forgot Password?</a>
+                </div>
+                <div style="position: relative;">
+                    <input type="password" id="loginPassword" class="custom-input" placeholder="••••••••••••" required style="padding-right: 40px;">
+                    <button type="button" onclick="togglePassword('loginPassword', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 14px;">👁️</button>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 12px; color: var(--text-secondary);">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="rememberMe"> Remember me
+                </label>
+            </div>
+
+            <button type="submit" class="btn-emerald" id="authSubmitBtn">Sign In to Vendor Workspace</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 24px; font-size: 13px; color: var(--text-secondary);" id="registerLinkWrap">
+            Need a vendor account? <a href="#" onclick="openRegistrationModal(event)" style="color: var(--primary); font-weight: 700; text-decoration: none;">Register Your Store</a>
+        </div>
+    </div>
+</div>
+
+<!-- Vendor Store Registration Modal -->
+<div id="regModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 1000; padding: 20px;">
+    <div class="auth-card" style="max-width: 520px; position: relative; border: 1px solid rgba(255,255,255,0.2); max-height: 90vh; overflow-y: auto;">
+        <button onclick="closeRegistrationModal()" style="position: absolute; top: 20px; right: 20px; border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">✕</button>
+
+        <div class="auth-brand" style="margin-bottom: 16px;">
+            <div class="brand-gem">🏪</div>
+            <span class="brand-name" style="font-size: 22px;">Vendor Registration</span>
+        </div>
+        <p class="auth-desc" style="margin-bottom: 20px;">Register your store on ShopSense Multi-Vendor Platform</p>
+
+        <div id="regAlert" style="display: none; padding: 12px; margin-bottom: 16px; border-radius: var(--radius-md); font-size: 13px;"></div>
+
+        <form onsubmit="executeVendorRegister(event)">
+            <div class="input-group">
+                <label class="input-label">Store / Business Name *</label>
+                <input type="text" id="regStoreName" class="custom-input" placeholder="e.g. Unique Fashion Store" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Owner Full Name *</label>
+                <input type="text" id="regOwnerName" class="custom-input" placeholder="e.g. Alex Rivera" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Official Email *</label>
+                <input type="email" id="regVendorEmail" class="custom-input" placeholder="alex@example.com" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Contact Phone Number *</label>
+                <input type="tel" id="regVendorPhone" class="custom-input" placeholder="+1 (555) 987-6543" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="input-group">
+                    <label class="input-label">Password *</label>
+                    <div style="position: relative;">
+                        <input type="password" id="regVendorPassword" class="custom-input" placeholder="••••••••" required style="padding-right: 36px;">
+                        <button type="button" onclick="togglePassword('regVendorPassword', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 13px;">👁️</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Confirm Password *</label>
+                    <div style="position: relative;">
+                        <input type="password" id="regVendorConfirmPassword" class="custom-input" placeholder="••••••••" required style="padding-right: 36px;">
+                        <button type="button" onclick="togglePassword('regVendorConfirmPassword', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 13px;">👁️</button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-emerald">Register Store &amp; Sign In</button>
+        </form>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 1000; padding: 20px;">
+    <div class="auth-card" style="max-width: 440px; position: relative; border: 1px solid rgba(255,255,255,0.2);">
+        <button onclick="closeForgotPasswordModal()" style="position: absolute; top: 20px; right: 20px; border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">✕</button>
+
+        <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Reset Password</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Enter your registered store email to receive password reset instructions.</p>
+
+        <form onsubmit="executeForgotPassword(event)">
+            <div class="input-group">
+                <label class="input-label">Registered Email</label>
+                <input type="email" id="forgotEmail" class="custom-input" placeholder="vendor@shopsense.com" required>
+            </div>
+            <button type="submit" class="btn-emerald">Send Reset Instructions</button>
+        </form>
+    </div>
+</div>
+
+<script src="/frontend/js/api.js?v=5"></script>
+<script>
+    let activeRole = 'vendor';
+
+    function setRole(role) {
+        activeRole = role;
+        const vendorBtn = document.getElementById('btnVendorRole');
+        const adminBtn = document.getElementById('btnAdminRole');
+        const submitBtn = document.getElementById('authSubmitBtn');
+        const regWrap = document.getElementById('registerLinkWrap');
+
+        if (role === 'vendor') {
+            vendorBtn.classList.add('active');
+            adminBtn.classList.remove('active');
+            submitBtn.textContent = 'Sign In to Vendor Workspace';
+            regWrap.style.display = 'block';
+        } else {
+            adminBtn.classList.add('active');
+            vendorBtn.classList.remove('active');
+            submitBtn.textContent = 'Sign In to Admin Control';
+            regWrap.style.display = 'none';
+        }
+    }
+
+    function togglePassword(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
+
+    async function executeAuth(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const alertBox = document.getElementById('authAlert');
+
+        alertBox.style.display = 'none';
+
+        try {
+            if (activeRole === 'vendor') {
+                const data = await API.vendorLogin(email, password);
+                localStorage.removeItem('shopsense_admin');
+                localStorage.removeItem('shopsense_admin_token');
+
+                localStorage.setItem('shopsense_token', data.access_token);
+                localStorage.setItem('shopsense_vendor', JSON.stringify(data.vendor));
+                window.location.href = '/frontend/vendor/dashboard.html';
+            } else {
+                const data = await API.adminLogin(email, password);
+                localStorage.removeItem('shopsense_vendor');
+                localStorage.removeItem('shopsense_token');
+
+                localStorage.setItem('shopsense_admin_token', data.access_token);
+                localStorage.setItem('shopsense_admin', JSON.stringify(data.admin));
+                window.location.href = '/frontend/vendor/dashboard.html';
+            }
+        } catch (err) {
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#fef2f2';
+            alertBox.style.color = '#991b1b';
+            alertBox.style.border = '1px solid #fecaca';
+            alertBox.textContent = err.message || "Invalid Email or Password";
+        }
+    }
+
+    function openRegistrationModal(e) {
+        e.preventDefault();
+        document.getElementById('regModal').style.display = 'flex';
+    }
+
+    function closeRegistrationModal() {
+        document.getElementById('regModal').style.display = 'none';
+    }
+
+    function openForgotPasswordModal(e) {
+        e.preventDefault();
+        document.getElementById('forgotModal').style.display = 'flex';
+    }
+
+    function closeForgotPasswordModal() {
+        document.getElementById('forgotModal').style.display = 'none';
+    }
+
+    function executeForgotPassword(e) {
+        e.preventDefault();
+        alert("Password reset instructions sent to your email!");
+        closeForgotPasswordModal();
+    }
+
+    async function executeVendorRegister(event) {
+        event.preventDefault();
+        const storeName = document.getElementById('regStoreName').value.trim();
+        const ownerName = document.getElementById('regOwnerName').value.trim();
+        const email = document.getElementById('regVendorEmail').value.trim();
+        const phone = document.getElementById('regVendorPhone').value.trim();
+        const password = document.getElementById('regVendorPassword').value;
+        const confirmPassword = document.getElementById('regVendorConfirmPassword').value;
+        const alertBox = document.getElementById('regAlert');
+
+        if (password !== confirmPassword) {
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#fef2f2';
+            alertBox.style.color = '#991b1b';
+            alertBox.style.border = '1px solid #fecaca';
+            alertBox.textContent = 'Password and Confirm Password do not match.';
+            return;
+        }
+
+        try {
+            await API.vendorRegister(storeName, ownerName, email, phone, password, confirmPassword);
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#ecfdf5';
+            alertBox.style.color = '#065f46';
+            alertBox.style.border = '1px solid #a7f3d0';
+            alertBox.textContent = 'Vendor store registered successfully! Logging you in...';
+
+            localStorage.removeItem('shopsense_admin');
+            localStorage.removeItem('shopsense_admin_token');
+
+            const loginRes = await API.vendorLogin(email, password);
+            localStorage.setItem('shopsense_token', loginRes.access_token);
+            localStorage.setItem('shopsense_vendor', JSON.stringify(loginRes.vendor));
+
+            setTimeout(() => {
+                window.location.href = '/frontend/vendor/dashboard.html';
+            }, 1000);
+        } catch (err) {
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#fef2f2';
+            alertBox.style.color = '#991b1b';
+            alertBox.style.border = '1px solid #fecaca';
+            alertBox.textContent = err.message || 'Registration failed.';
+        }
+    }
+</script>
+
+</body>
+</html>

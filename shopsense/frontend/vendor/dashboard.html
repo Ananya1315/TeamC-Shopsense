@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopSense — Multi-Vendor Commerce Platform</title>
+    <link rel="stylesheet" href="/frontend/css/style.css?v=5">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Floating Toast Notifications Container -->
+<div id="toastContainer"></div>
+
+<div class="portal-layout">
+    <!-- Sleek Sidebar Navigation -->
+    <aside class="portal-sidebar">
+        <div class="sidebar-top">
+            <div class="brand-gem">💎</div>
+            <span class="brand-name" style="font-size: 20px; color: #fff;">ShopSense</span>
+        </div>
+
+        <div class="sidebar-menu-label" id="sidebarMenuLabel">VENDOR WORKSPACE</div>
+
+        <ul class="sidebar-nav-list" id="sidebarMenuList">
+            <li class="sidebar-item">
+                <a class="sidebar-link active" id="menuDashboard" onclick="navigate('dashboard')">
+                    <span>📊</span>
+                    <span id="menuDashboardText">Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item" id="sidebarItemVendors" style="display: none;">
+                <a class="sidebar-link" id="menuVendors" onclick="navigate('vendors')">
+                    <span>👥</span>
+                    <span>Vendor Management</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link" id="menuCatalog" onclick="navigate('catalog')">
+                    <span>🛍️</span>
+                    <span id="menuCatalogText">Inventory</span>
+                </a>
+            </li>
+            <li class="sidebar-item" id="sidebarItemAddProduct">
+                <a class="sidebar-link" id="menuAddProduct" onclick="navigate('add-product')">
+                    <span>⚡</span>
+                    <span>Add Product</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link" id="menuAnalytics" onclick="navigate('analytics')">
+                    <span>📈</span>
+                    <span>Analytics &amp; AI</span>
+                </a>
+            </li>
+            <li class="sidebar-item" id="sidebarItemReports" style="display: none;">
+                <a class="sidebar-link" id="menuReports" onclick="navigate('analytics')">
+                    <span>📑</span>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link" id="menuMedia" onclick="navigate('media')">
+                    <span>🖼️</span>
+                    <span>Media</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a class="sidebar-link" id="menuSettings" onclick="navigate('settings')">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+
+        <div style="padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.08);">
+            <a class="sidebar-link" onclick="executeLogout()" style="color: #f87171;">
+                <span>🚪</span>
+                <span>Sign Out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="portal-main">
+        <!-- Top Navbar -->
+        <header class="portal-navbar">
+            <div class="search-bar-wrap">
+                <span class="search-icon-inside">🔍</span>
+                <input type="text" class="search-input" id="topGlobalSearch" placeholder="Search catalog, vendors or analytics..." oninput="handleGlobalSearch(this.value)">
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <button class="btn-emerald" id="topbarAddBtn" style="width: auto; padding: 9px 18px; font-size: 13px;" onclick="navigate('add-product')">
+                    + Add Product
+                </button>
+
+                <div class="user-profile-pill">
+                    <div class="avatar-circle" id="userPillAvatar">TE</div>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--dark-slate);" id="userPillName">Store Owner</div>
+                        <div style="font-size: 10px; color: var(--text-muted);" id="userPillRole">Verified Merchant</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <div class="portal-content">
+
+            <!-- 1. DASHBOARD VIEW -->
+            <section id="pageDashboard" class="page-view active">
+                <div class="hero-store-banner">
+                    <div>
+                        <h2 class="hero-title" id="heroTitle">Welcome to your ShopSense Vendor Workspace 👋</h2>
+                        <p class="hero-subtitle" id="heroSubtext">Here is your live store performance, sales summary, and inventory overview.</p>
+                    </div>
+                    <button class="btn-hero-action" id="heroAddBtn" onclick="navigate('add-product')">+ Add Product</button>
+                </div>
+
+                <!-- Vendor Shortcuts Row -->
+                <div id="vendorShortcutsRow" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                    <button class="btn-act btn-act-view" onclick="navigate('add-product')" style="padding: 10px 18px; font-size: 13px;">⚡ Add Product</button>
+                    <button class="btn-act btn-act-edit" onclick="navigate('catalog')" style="padding: 10px 18px; font-size: 13px;">🛍️ View Inventory</button>
+                    <button class="btn-act btn-act-view" onclick="navigate('analytics')" style="padding: 10px 18px; font-size: 13px;">📈 Sales Report</button>
+                    <button class="btn-act btn-act-edit" onclick="navigate('analytics')" style="padding: 10px 18px; font-size: 13px;">🤖 AI Insights</button>
+                </div>
+
+                <!-- Dynamic Metrics Cards Grid -->
+                <div class="dashboard-stats-grid" id="statsCardsGrid">
+                    <!-- Cards populated dynamically by app.js -->
+                </div>
+
+                <!-- Vendor Inventory Health Section (Vendor Only) -->
+                <div id="vendorHealthPanel" class="glass-panel" style="margin-bottom: 32px; display: block;">
+                    <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Inventory Health Summary</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Real-time stock level status breakdown across your listed products</p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: var(--radius-md);">
+                            <div style="font-size: 12px; color: #166534; font-weight: 700;">Available Stock (&gt;20)</div>
+                            <div style="font-size: 24px; font-weight: 800; color: #15803d; margin-top: 4px;" id="healthAvailableCount">0</div>
+                        </div>
+                        <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 16px; border-radius: var(--radius-md);">
+                            <div style="font-size: 12px; color: #92400e; font-weight: 700;">Low Stock (10-20) ⚠️</div>
+                            <div style="font-size: 24px; font-weight: 800; color: #b45309; margin-top: 4px;" id="healthLowCount">0</div>
+                        </div>
+                        <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: var(--radius-md);">
+                            <div style="font-size: 12px; color: #991b1b; font-weight: 700;">Out of Stock Warning (&lt;10) 🚨</div>
+                            <div style="font-size: 24px; font-weight: 800; color: #b91c1c; margin-top: 4px;" id="healthOutCount">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Only: Registered Vendors Table -->
+                <div id="sectionAdminVendors" style="display: none; margin-bottom: 36px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div>
+                            <h3 style="font-size: 20px; font-weight: 800;">Registered Marketplace Vendors</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary);">Manage all registered merchant accounts, status, and product counts</p>
+                        </div>
+                    </div>
+                    <div class="catalog-table-wrapper">
+                        <table class="catalog-table">
+                            <thead>
+                                <tr>
+                                    <th>Store Name</th>
+                                    <th>Owner Name</th>
+                                    <th>Email Address</th>
+                                    <th>Phone</th>
+                                    <th>Products Listed</th>
+                                    <th>Products Sold</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminVendorsTableBody">
+                                <!-- Dynamic vendor rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recent Listings Table -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                    <div>
+                        <h3 style="font-size: 20px; font-weight: 800;" id="recentSectionTitle">Recent Inventory Items</h3>
+                        <p style="font-size: 13px; color: var(--text-secondary);" id="recentSectionSubtext">Newly added items in your store inventory</p>
+                    </div>
+                    <a onclick="navigate('catalog')" style="color: var(--primary); font-weight: 700; text-decoration: none; cursor: pointer; font-size: 14px;">Browse Full Catalog →</a>
+                </div>
+
+                <div class="catalog-table-wrapper">
+                    <table class="catalog-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="admin-only-col" style="display: none;">Vendor Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Inventory Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTableBody">
+                            <!-- Rows populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <!-- 2. MANAGE VENDORS VIEW (ADMIN ONLY) -->
+            <section id="pageVendors" class="page-view" style="display: none;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 800;">Marketplace Vendor Management</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Monitor registered vendors, enable/disable accounts, or remove stores</p>
+                </div>
+
+                <div class="catalog-table-wrapper">
+                    <table class="catalog-table">
+                        <thead>
+                            <tr>
+                                <th>Store Name</th>
+                                <th>Owner Name</th>
+                                <th>Email Address</th>
+                                <th>Phone</th>
+                                <th>Products Listed</th>
+                                <th>Products Sold</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fullVendorsTableBody">
+                            <!-- Dynamic vendor rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <!-- 3. PRODUCT CATALOG VIEW -->
+            <section id="pageCatalog" class="page-view" style="display: none;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 800;" id="catalogPageTitle">My Inventory Catalog</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);" id="catalogPageSubtext">Manage, edit, and organize all your store items.</p>
+                </div>
+
+                <!-- Search & Filters Bar -->
+                <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center;">
+                    <div style="flex: 1; min-width: 240px;" class="search-bar-wrap">
+                        <span class="search-icon-inside">🔍</span>
+                        <input type="text" id="catalogSearchInput" class="search-input" style="border-radius: var(--radius-md); padding: 11px 16px 11px 40px; background: #fff; border: 1.5px solid var(--border-color);" placeholder="Search by product, vendor or category..." oninput="handleCatalogSearch()">
+                    </div>
+
+                    <select id="filterCategory" onchange="handleCatalogSearch()" class="custom-input" style="width: auto; padding: 10px 14px; border-radius: var(--radius-md);">
+                        <option value="">All Categories</option>
+                        <option value="Apparel">Apparel</option>
+                        <option value="Audio">Audio / Electronics</option>
+                        <option value="Footwear">Footwear</option>
+                        <option value="Accessories">Accessories</option>
+                    </select>
+
+                    <select id="sortPrice" onchange="handleCatalogSearch()" class="custom-input" style="width: auto; padding: 10px 14px; border-radius: var(--radius-md);">
+                        <option value="">Sort by Price</option>
+                        <option value="low-high">Price: Low to High</option>
+                        <option value="high-low">Price: High to Low</option>
+                    </select>
+
+                    <select id="sortStock" onchange="handleCatalogSearch()" class="custom-input" style="width: auto; padding: 10px 14px; border-radius: var(--radius-md);">
+                        <option value="">Sort by Stock</option>
+                        <option value="low-stock">Lowest Stock First</option>
+                        <option value="high-stock">Highest Stock First</option>
+                    </select>
+                </div>
+
+                <!-- Catalog Table -->
+                <div class="catalog-table-wrapper">
+                    <table class="catalog-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="admin-only-col" style="display: none;">Vendor Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Inventory Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fullCatalogTableBody">
+                            <!-- Dynamic Table Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <!-- 4. ADD PRODUCT VIEW (VENDOR ONLY) -->
+            <section id="pageAddProduct" class="page-view" style="display: none;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 800;">Create New Product Listing</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Enter item details to publish immediately to PostgreSQL store catalog</p>
+                </div>
+
+                <div class="full-form-card">
+                    <div id="addNotice" style="display: none; padding: 12px; margin-bottom: 20px; border-radius: var(--radius-md); font-size: 13px;"></div>
+
+                    <form id="createProdForm" onsubmit="executeAddProduct(event)">
+                        <div class="input-group">
+                            <label class="input-label">Product Name *</label>
+                            <input type="text" id="inName" class="custom-input" placeholder="e.g. Bag or Wide Leg Jeans" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Description</label>
+                            <textarea id="inDesc" class="custom-input" rows="3" placeholder="Enter product details &amp; features..."></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="input-group">
+                                <label class="input-label">Price ($) *</label>
+                                <input type="number" step="0.01" id="inPrice" class="custom-input" placeholder="0.00" required>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Stock Quantity *</label>
+                                <input type="number" id="inQty" class="custom-input" placeholder="0" required>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Category *</label>
+                            <input type="text" id="inCategory" class="custom-input" placeholder="e.g. Apparel / Denim / Audio" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Tags (comma-separated)</label>
+                            <input type="text" id="inTags" class="custom-input" placeholder="e.g. bag, fashion, luxury">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Image URL</label>
+                            <input type="url" id="inImage" class="custom-input" placeholder="https://example.com/product.jpg">
+                        </div>
+
+                        <button type="submit" class="btn-emerald" style="margin-top: 10px;">Publish Product to Inventory</button>
+                    </form>
+                </div>
+            </section>
+
+
+            <!-- 5. ANALYTICS & AI INSIGHTS VIEW -->
+            <section id="pageAnalytics" class="page-view" style="display: none;">
+                <div style="margin-bottom: 28px;">
+                    <h2 style="font-size: 24px; font-weight: 800;">AI Intelligence &amp; Demand Forecasting</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);">ARIMA time-series inventory forecasting and Gemini LLM review sentiment analysis</p>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="glass-panel">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 24px;">📈</span>
+                            <h3 style="font-size: 18px; font-weight: 800;">ARIMA Demand Forecast</h3>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Predict 7-day future stock demand based on daily sales trends.</p>
+
+                        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                            <select id="forecastId" class="custom-input" style="width: 220px;">
+                                <option value="">Select Product...</option>
+                            </select>
+                            <button class="btn-emerald" style="width: auto; padding: 0 20px;" onclick="executeForecast()">Generate Forecast</button>
+                        </div>
+
+                        <div id="forecastBox" style="display: none; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                            <!-- Forecast output -->
+                        </div>
+                    </div>
+
+                    <div class="glass-panel">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 24px;">🤖</span>
+                            <h3 style="font-size: 18px; font-weight: 800;">Gemini AI Review Sentiment</h3>
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Simulate customer review analysis to extract sentiment scores.</p>
+
+                        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                            <select id="sentProdId" class="custom-input" style="width: 220px;">
+                                <option value="">Select Product...</option>
+                            </select>
+                            <input type="number" id="sentRating" class="custom-input" placeholder="Rating (1-5)" min="1" max="5" style="width: 140px;">
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            <textarea id="sentText" class="custom-input" rows="2" placeholder="Enter customer review text..."></textarea>
+                        </div>
+
+                        <button class="btn-emerald" onclick="executeSentiment()">Submit Review &amp; Analyze</button>
+
+                        <div id="sentimentBox" style="display: none; margin-top: 20px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+                            <!-- Sentiment output -->
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 20px; font-weight: 800;">Customer Analytics & Segmentation</h3>
+                    <button class="btn-emerald" style="width: auto; padding: 6px 16px; font-size: 12px;" onclick="executeSeedData()">Seed Historical Data (Test)</button>
+                </div>
+                
+                <div id="customerSegmentsBox" class="analytics-grid" style="margin-top: 16px;">
+                    <!-- Segments loaded here -->
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 20px; font-weight: 800;">Top Recommended Products</h3>
+                </div>
+                
+                <div id="recommendationsBox" class="analytics-grid" style="margin-top: 16px; grid-template-columns: repeat(3, 1fr);">
+                    <!-- Recommendations loaded here -->
+                </div>
+            </section>
+
+
+            <!-- 6. MEDIA LIBRARY VIEW -->
+            <section id="pageMedia" class="page-view" style="display: none;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 800;">Media Asset Library</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Product image assets and media links</p>
+                </div>
+
+                <div class="dashboard-stats-grid" id="mediaAssetGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+
+            <!-- 7. SETTINGS VIEW -->
+            <section id="pageSettings" class="page-view" style="display: none;">
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 24px; font-weight: 800;">Account &amp; Platform Settings</h2>
+                    <p style="font-size: 13px; color: var(--text-secondary);">Manage account profile, contact preferences, and notifications</p>
+                </div>
+
+                <div class="full-form-card">
+                    <form onsubmit="event.preventDefault(); showToast('Settings Updated', 'Account preferences saved successfully.', 'success');">
+                        <div class="input-group">
+                            <label class="input-label">Account Name</label>
+                            <input type="text" id="settingsName" class="custom-input" value="Store Account" readonly style="background: #f8fafc;">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Email Address</label>
+                            <input type="email" id="settingsEmail" class="custom-input" value="account@shopsense.com" readonly style="background: #f8fafc;">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Notification Preferences</label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 8px; cursor: pointer;">
+                                <input type="checkbox" checked> Receive low stock alert notifications
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-emerald">Save Preferences</button>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- Modal: View Product Details -->
+<div id="modalView" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close-btn" onclick="closeViewModal()">✕</button>
+        <div style="display: flex; gap: 24px; align-items: flex-start;">
+            <img id="viewImg" src="" style="width: 160px; height: 160px; border-radius: var(--radius-md); object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;" alt="Product">
+            <div>
+                <span class="category-pill" id="viewCategory" style="margin-bottom: 10px;">Category</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: var(--dark-slate); margin-bottom: 6px;" id="viewName">Product Name</h2>
+                <div class="price-text" style="font-size: 24px; margin-bottom: 12px;" id="viewPrice">$0.00</div>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;" id="viewDesc">Description</p>
+
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+                    <div><strong>Stock:</strong> <span id="viewStock">0</span></div>
+                    <div><strong>Inventory Status:</strong> <span id="viewStatusBadge">-</span></div>
+                    <div><strong>Product ID:</strong> <span id="viewId">#0</span></div>
+                    <div><strong>Vendor Store:</strong> <span id="viewVendor">-</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Edit Product Details -->
+<div id="modalEdit" class="modal-overlay">
+    <div class="modal-content" style="max-width: 540px;">
+        <button class="modal-close-btn" onclick="closeEditModal()">✕</button>
+        <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;">Edit Product Listing</h3>
+
+        <form id="editProdForm" onsubmit="executeSaveEditProduct(event)">
+            <input type="hidden" id="editId">
+
+            <div class="input-group">
+                <label class="input-label">Product Name *</label>
+                <input type="text" id="editName" class="custom-input" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Description</label>
+                <textarea id="editDesc" class="custom-input" rows="3"></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="input-group">
+                    <label class="input-label">Price ($) *</label>
+                    <input type="number" step="0.01" id="editPrice" class="custom-input" required>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Stock Quantity *</label>
+                    <input type="number" id="editQty" class="custom-input" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Category *</label>
+                <input type="text" id="editCategory" class="custom-input" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Tags</label>
+                <input type="text" id="editTags" class="custom-input">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Image URL</label>
+                <input type="url" id="editImage" class="custom-input">
+            </div>
+
+            <button type="submit" class="btn-emerald">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script src="/frontend/js/api.js?v=7"></script>
+<script src="/frontend/js/app.js?v=7"></script>
+</body>
+</html>

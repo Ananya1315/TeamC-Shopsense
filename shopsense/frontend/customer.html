@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Shop - ShopSense</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background-color: var(--bg-light); padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { font-size: 24px; font-weight: 800; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .product-img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; background: #f1f5f9; }
+        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 5px; }
+        .product-price { color: var(--primary); font-weight: 800; font-size: 18px; margin-bottom: 10px; }
+        .buy-btn { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .buy-btn:hover { background: var(--primary-dark); }
+        .buy-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .auth-box { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .auth-box input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h2 style="margin-bottom: 20px; font-weight: 800;">Welcome to ShopSense</h2>
+            <p style="margin-bottom: 20px; font-size: 14px; color: #64748b;">Please enter your details to start shopping and help us track your orders.</p>
+            <input type="text" id="custName" placeholder="Full Name" required>
+            <input type="email" id="custEmail" placeholder="Email Address" required>
+            <button class="buy-btn" onclick="startShopping()">Start Shopping</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>ShopSense Marketplace</h1>
+            <div id="userInfo" style="font-weight: 600;"></div>
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            <!-- Products loaded here -->
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        let currentCustomer = null;
+
+        async function startShopping() {
+            const name = document.getElementById('custName').value;
+            const email = document.getElementById('custEmail').value;
+            if (!name || !email) return alert("Please enter name and email");
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/customer/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+                if (!res.ok) throw new Error("Failed to register");
+                currentCustomer = await res.json();
+                
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('userInfo').innerText = `Welcome, ${currentCustomer.name}`;
+                loadProducts();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                // Fetch all active products
+                const res = await fetch(`${API_BASE_URL}/admin/products`);
+                const products = await res.json();
+                const grid = document.getElementById('productGrid');
+                
+                if (products.length === 0) {
+                    grid.innerHTML = "<p>No products available right now.</p>";
+                    return;
+                }
+
+                grid.innerHTML = products.map(p => {
+                    const imgUrl = p.image_url || 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmMmYyZjIiLz48L3N2Zz4=';
+                    const outOfStock = p.stock_quantity <= 0;
+                    return `
+                        <div class="product-card">
+                            <img src="${imgUrl}" class="product-img" alt="${p.name}">
+                            <div style="font-size: 12px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; font-weight: 700;">${p.category}</div>
+                            <div class="product-title">${p.name}</div>
+                            <div class="product-price">$${p.price.toFixed(2)}</div>
+                            <div style="font-size: 13px; margin-bottom: 15px; color: ${outOfStock ? '#ef4444' : '#10b981'}; font-weight: 600;">
+                                ${outOfStock ? 'Out of Stock' : `In Stock: ${p.stock_quantity}`}
+                            </div>
+                            <button class="buy-btn" ${outOfStock ? 'disabled' : ''} onclick="placeOrder(${p.id})">
+                                ${outOfStock ? 'Unavailable' : 'Buy 1 Item'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function placeOrder(productId) {
+            if (!currentCustomer) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/customer/order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_id: currentCustomer.id,
+                        product_id: productId,
+                        quantity: 1
+                    })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Order failed");
+                }
+                
+                alert("Order placed successfully!");
+                loadProducts(); // Refresh stock
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+    </script>
+</body>
+</html>
