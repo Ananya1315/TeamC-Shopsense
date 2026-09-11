@@ -51,13 +51,13 @@ const API = {
 
     // Admin Marketplace Management APIs
     async getAdminDashboardMetrics() {
-        const response = await fetch(`${API_BASE_URL}/admin/dashboard`);
+        const response = await fetch(`${API_BASE_URL}/admin/dashboard`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch admin dashboard metrics');
         return await response.json();
     },
 
     async getAdminVendors() {
-        const response = await fetch(`${API_BASE_URL}/admin/vendors`);
+        const response = await fetch(`${API_BASE_URL}/admin/vendors`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch marketplace vendors');
         return await response.json();
     },
@@ -79,7 +79,7 @@ const API = {
     },
 
     async getAdminProducts() {
-        const response = await fetch(`${API_BASE_URL}/admin/products`);
+        const response = await fetch(`${API_BASE_URL}/admin/products`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch admin marketplace products');
         return await response.json();
     },
@@ -87,22 +87,20 @@ const API = {
     // Product APIs
     async getProducts(vendorId = null) {
         const url = vendorId ? `${API_BASE_URL}/products/?vendor_id=${vendorId}` : `${API_BASE_URL}/products/`;
-        const response = await fetch(url);
+        const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch products');
         return await response.json();
     },
 
-    async createProduct(productData, vendorId = 1) {
+    async createProduct(productData, vendorId) {
         productData.vendor_id = vendorId;
-        const response = await fetch(`${API_BASE_URL}/products/?vendor_id=${vendorId}`, {
+        const url = vendorId ? `${API_BASE_URL}/products/?vendor_id=${vendorId}` : `${API_BASE_URL}/products/`;
+        const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(productData)
         });
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || 'Failed to create product');
-        }
+        if (!response.ok) throw new Error('Failed to create product');
         return await response.json();
     },
 
@@ -115,14 +113,16 @@ const API = {
     },
 
     // Analytics APIs
-    async getDashboardMetrics(vendorId = 1) {
-        const response = await fetch(`${API_BASE_URL}/analytics/dashboard?vendor_id=${vendorId}`);
+    async getDashboardMetrics(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/dashboard?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/dashboard`;
+        const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch dashboard metrics');
         return await response.json();
     },
 
-    async getLowStockAlerts(vendorId = 1) {
-        const response = await fetch(`${API_BASE_URL}/analytics/low-stock?vendor_id=${vendorId}`);
+    async getLowStockAlerts(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/low-stock?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/low-stock`;
+        const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch low stock alerts');
         return await response.json();
     },
@@ -151,23 +151,38 @@ const API = {
         return await response.json();
     },
 
-    async getCustomerSegmentation(vendorId = 1) {
-        const response = await fetch(`${API_BASE_URL}/analytics/customer-segmentation?vendor_id=${vendorId}`);
+    async getCustomerSegmentation(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/customer-segmentation?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/customer-segmentation`;
+        const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch customer segmentation');
         return await response.json();
     },
 
-    async getRecommendations(vendorId = 1) {
-        const response = await fetch(`${API_BASE_URL}/analytics/recommendations?vendor_id=${vendorId}`);
+    async getRecommendations(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/recommendations?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/recommendations`;
+        const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) throw new Error('Failed to fetch recommendations');
         return await response.json();
     },
 
-    async seedHistoricalData(vendorId = 1) {
-        const response = await fetch(`${API_BASE_URL}/analytics/seed?vendor_id=${vendorId}`, {
+    async seedHistoricalData(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/seed?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/seed`;
+        const response = await fetch(url, {
             method: 'POST'
         });
         if (!response.ok) throw new Error('Failed to seed historical data');
         return await response.json();
+    },
+
+    async getReportsData(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/reports?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/reports`;
+        const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed to fetch reports data');
+        return await response.json();
+    },
+
+    downloadReportsExcel(vendorId = null) {
+        const url = vendorId ? `${API_BASE_URL}/analytics/reports/excel?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/reports/excel`;
+        window.open(url, '_blank');
     }
 };

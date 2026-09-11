@@ -66,3 +66,44 @@ class SeedDataResponse(BaseModel):
     message: str
     customers_added: int
     transactions_added: int
+
+class TrendPoint(BaseModel):
+    date: str
+    revenue: float
+    units_sold: int
+
+class ProductPerformance(BaseModel):
+    product_id: int
+    product_name: str
+    category: str
+    revenue: float
+    units_sold: int
+
+class CategoryPerformance(BaseModel):
+    category: str
+    revenue: float
+    units_sold: int
+
+class BenchmarkData(BaseModel):
+    vendor_revenue: float
+    market_avg_revenue: float
+    vendor_units: int
+    market_avg_units: int
+
+class RecentTransaction(BaseModel):
+    date: str
+    product_name: str
+    quantity: int
+    amount: float
+
+class ReportResponse(BaseModel):
+    total_revenue: float
+    total_units: int
+    total_products: int
+    total_customers: int
+    trends: List[TrendPoint]
+    products: List[ProductPerformance]
+    categories: List[CategoryPerformance]
+    recent_transactions: List[RecentTransaction]
+    benchmarks: Optional[BenchmarkData] = None
+

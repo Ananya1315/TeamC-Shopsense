@@ -35,8 +35,6 @@
             <input type="email" id="custEmail" placeholder="Email Address" required>
             <button class="buy-btn" onclick="startShopping()">Start Shopping</button>
         </div>
-    </div>
-
     <div class="container">
         <div class="header">
             <h1>ShopSense Marketplace</h1>
@@ -122,11 +120,7 @@
                     })
                 });
                 
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.detail || "Order failed");
-                }
-                
+                if (!res.ok) throw new Error("Order failed");
                 alert("Order placed successfully!");
                 loadProducts(); // Refresh stock
             } catch (e) {

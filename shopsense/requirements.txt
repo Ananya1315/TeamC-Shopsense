@@ -7,3 +7,9 @@ psycopg2-binary>=2.9.0
 requests>=2.31.0
 pandas>=2.0.0
 statsmodels>=0.14.0
+openpyxl>=3.1.0
+langchain
+langchain-community
+langchain-google-genai
+google-generativeai
+faiss-cpu

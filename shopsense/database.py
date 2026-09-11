@@ -5,20 +5,22 @@ import os
 
 load_dotenv()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-try:
-    if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
-        engine = create_engine(DATABASE_URL)
-        # Test connection
-        with engine.connect() as conn:
-            pass
-    else:
-        raise Exception("Use SQLite fallback")
-except Exception as e:
-    print(f"PostgreSQL connection unavailable ({e}). Falling back to SQLite database.")
-    DATABASE_URL = "sqlite:///./shopsense.db"
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+if not DATABASE_URL:
+    DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'shopsense.db')}"
+elif not (DATABASE_URL.startswith("postgresql") or DATABASE_URL.startswith("sqlite")):
+    raise ValueError(
+        "DATABASE_URL must be a valid PostgreSQL or SQLite connection string. "
+        "Example: postgresql://... or sqlite:///./shopsense.db"
+    )
+
+engine_kwargs = {}
+if DATABASE_URL.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 
 SessionLocal = sessionmaker(
     autocommit=False,

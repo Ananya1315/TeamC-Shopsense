@@ -1,0 +1,7 @@
+.env
+*.pyc
+__pycache__/
+shopsense_m2_backup/
+debug_dash.py
+fix_api.py
+test_browser.py

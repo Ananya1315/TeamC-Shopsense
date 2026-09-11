@@ -67,3 +67,25 @@ def seed_historical_data(
     db: Session = Depends(get_db)
 ):
     return crud.seed_historical_data(db, vendor_id)
+
+from fastapi.responses import StreamingResponse
+
+@router.get('/reports', response_model=schema.ReportResponse)
+def get_reports_data(
+    vendor_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db)
+):
+    return crud.get_reports_data(db, vendor_id)
+
+@router.get('/reports/excel')
+def get_reports_excel(
+    vendor_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db)
+):
+    excel_data = crud.export_reports_excel(db, vendor_id)
+    return StreamingResponse(
+        iter([excel_data]),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename=reports_export.xlsx'}
+    )
+

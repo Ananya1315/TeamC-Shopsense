@@ -13,21 +13,22 @@ from routers.product import router as product_router
 from routers.analytics import router as analytics_router
 from routers.customer import router as customer_router
 
+Base.metadata.create_all(bind=engine)
+
 # Auto-migrate missing columns for existing PostgreSQL tables if needed
 with engine.connect() as conn:
     try:
-        conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS password_hash VARCHAR DEFAULT '';"))
-        conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS owner_name VARCHAR DEFAULT '';"))
-        conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;"))
-        conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"))
-        conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE;"))
-        conn.execute(text("CREATE TABLE IF NOT EXISTS customers (id SERIAL PRIMARY KEY, name VARCHAR, email VARCHAR UNIQUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"))
-        conn.execute(text("ALTER TABLE transactions ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES customers(id);"))
-        conn.commit()
+        if conn.dialect.name == "postgresql":
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS password_hash VARCHAR DEFAULT '';"))
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS owner_name VARCHAR DEFAULT '';"))
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;"))
+            conn.execute(text("ALTER TABLE vendors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;"))
+            conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT TRUE;"))
+            conn.execute(text("CREATE TABLE IF NOT EXISTS customers (id SERIAL PRIMARY KEY, name VARCHAR, email VARCHAR UNIQUE, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"))
+            conn.execute(text("ALTER TABLE transactions ADD COLUMN IF NOT EXISTS customer_id INTEGER REFERENCES customers(id);"))
+            conn.commit()
     except Exception as e:
         print(f"Table auto-migration note: {e}")
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="ShopSense Multi-Vendor Commerce & Analytics Platform", version="1.0.0")
 

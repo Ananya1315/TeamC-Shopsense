@@ -300,3 +300,175 @@ def seed_historical_data(db: Session, vendor_id: int) -> SeedDataResponse:
         customers_added=5,
         transactions_added=transactions_added
     )
+
+from schemas.analytics import TrendPoint, ProductPerformance, CategoryPerformance, BenchmarkData, ReportResponse, RecentTransaction
+import csv
+from io import StringIO
+
+def get_reports_data(db: Session, vendor_id: int = None) -> ReportResponse:
+    # Build base query for transactions
+    tx_query = db.query(Transaction)
+    prod_query = db.query(Product)
+    if vendor_id is not None:
+        tx_query = tx_query.filter(Transaction.vendor_id == vendor_id)
+        prod_query = prod_query.filter(Product.vendor_id == vendor_id)
+
+    total_revenue = tx_query.with_entities(func.sum(Transaction.total_amount)).scalar() or 0.0
+    total_units = tx_query.with_entities(func.sum(Transaction.quantity)).scalar() or 0
+    total_products = prod_query.count()
+    total_customers = tx_query.with_entities(func.count(func.distinct(Transaction.customer_id))).scalar() or 0
+
+    recent_txs = tx_query.order_by(Transaction.timestamp.desc()).all()
+    recent_transactions = []
+    for t in recent_txs:
+        p_name = db.query(Product.name).filter(Product.id == t.product_id).scalar() or "Unknown"
+        date_str = t.timestamp.strftime('%d %b %Y') if t.timestamp else ''
+        recent_transactions.append(RecentTransaction(
+            date=date_str,
+            product_name=p_name,
+            quantity=t.quantity,
+            amount=t.total_amount
+        ))
+
+    # 1. Revenue & Sales Trend
+    trends_data = db.query(
+        func.date(Transaction.timestamp).label('date'),
+        func.sum(Transaction.total_amount).label('revenue'),
+        func.sum(Transaction.quantity).label('units')
+    )
+    if vendor_id is not None:
+        trends_data = trends_data.filter(Transaction.vendor_id == vendor_id)
+    trends_data = trends_data.group_by(func.date(Transaction.timestamp)).order_by(func.date(Transaction.timestamp)).all()
+    
+    trends = []
+    for d, rev, units in trends_data:
+        # Handle string or date objects
+        date_str = str(d) if d else ''
+        trends.append(TrendPoint(date=date_str, revenue=rev or 0.0, units_sold=units or 0))
+
+    # 2. Product Performance
+    # Use products as base, left join transactions
+    prod_perf_data = db.query(
+        Product.id,
+        Product.name,
+        Product.category,
+        func.sum(Transaction.total_amount).label('revenue'),
+        func.sum(Transaction.quantity).label('units')
+    ).outerjoin(Transaction, Product.id == Transaction.product_id)
+    if vendor_id is not None:
+        prod_perf_data = prod_perf_data.filter(Product.vendor_id == vendor_id)
+    prod_perf_data = prod_perf_data.group_by(Product.id).all()
+
+    products = []
+    for pid, pname, cat, rev, units in prod_perf_data:
+        products.append(ProductPerformance(
+            product_id=pid,
+            product_name=pname,
+            category=cat or 'General',
+            revenue=rev or 0.0,
+            units_sold=units or 0
+        ))
+
+    # 3. Category Performance
+    cat_perf_data = db.query(
+        Product.category,
+        func.sum(Transaction.total_amount).label('revenue'),
+        func.sum(Transaction.quantity).label('units')
+    ).outerjoin(Transaction, Product.id == Transaction.product_id)
+    if vendor_id is not None:
+        cat_perf_data = cat_perf_data.filter(Product.vendor_id == vendor_id)
+    cat_perf_data = cat_perf_data.group_by(Product.category).all()
+
+    categories = []
+    for cat, rev, units in cat_perf_data:
+        categories.append(CategoryPerformance(
+            category=cat or 'General',
+            revenue=rev or 0.0,
+            units_sold=units or 0
+        ))
+
+    # 4. Benchmarking
+    benchmark = None
+    if vendor_id is not None:
+        vendor_rev = db.query(func.sum(Transaction.total_amount)).filter(Transaction.vendor_id == vendor_id).scalar() or 0.0
+        vendor_units = db.query(func.sum(Transaction.quantity)).filter(Transaction.vendor_id == vendor_id).scalar() or 0
+
+        # Market Average
+        from models import Vendor
+        active_vendors = db.query(Vendor).filter(Vendor.is_active == True).count() or 1
+        total_market_rev = db.query(func.sum(Transaction.total_amount)).scalar() or 0.0
+        total_market_units = db.query(func.sum(Transaction.quantity)).scalar() or 0
+
+        avg_rev = total_market_rev / active_vendors
+        avg_units = total_market_units / active_vendors
+
+        benchmark = BenchmarkData(
+            vendor_revenue=vendor_rev,
+            market_avg_revenue=avg_rev,
+            vendor_units=vendor_units,
+            market_avg_units=int(avg_units)
+        )
+
+    return ReportResponse(
+        total_revenue=total_revenue,
+        total_units=total_units,
+        total_products=total_products,
+        total_customers=total_customers,
+        trends=trends,
+        products=products,
+        categories=categories,
+        recent_transactions=recent_transactions,
+        benchmarks=benchmark
+    )
+
+import io
+import openpyxl
+from openpyxl.styles import Font, PatternFill
+
+def export_reports_excel(db: Session, vendor_id: int = None) -> bytes:
+    # Granular transaction data
+    query = db.query(Transaction, Product.name, Product.category).join(Product, Transaction.product_id == Product.id)
+    if vendor_id is not None:
+        query = query.filter(Transaction.vendor_id == vendor_id)
+    
+    transactions = query.all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Report Data"
+
+    headers = ['Transaction ID', 'Date', 'Product Name', 'Category', 'Quantity Sold', 'Total Amount']
+    ws.append(headers)
+
+    # Style Header
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
+    
+    for col_num in range(1, len(headers) + 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.font = header_font
+        cell.fill = header_fill
+        
+    # Freeze Panes
+    ws.freeze_panes = "A2"
+
+    for tx, pname, pcat in transactions:
+        date_str = tx.timestamp.strftime('%d-%b-%y') if tx.timestamp else ''
+        ws.append([tx.id, date_str, pname, pcat or 'General', tx.quantity, tx.total_amount])
+
+    # Auto-filter
+    ws.auto_filter.ref = ws.dimensions
+
+    # Adjust Column Widths
+    col_widths = {'A': 15, 'B': 15, 'C': 30, 'D': 20, 'E': 15, 'F': 15}
+    for col, width in col_widths.items():
+        ws.column_dimensions[col].width = width
+
+    # Format currency
+    for row in range(2, ws.max_row + 1):
+        ws.cell(row=row, column=6).number_format = '"$"#,##0.00'
+
+    output = io.BytesIO()
+    wb.save(output)
+    return output.getvalue()
+

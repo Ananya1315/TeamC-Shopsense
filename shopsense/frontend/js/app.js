@@ -86,7 +86,6 @@ function applyPortalBranding() {
 
         // Show Admin Sections & Columns
         document.getElementById('sidebarItemVendors').style.display = 'block';
-        document.getElementById('sidebarItemReports').style.display = 'block';
         document.getElementById('sectionAdminVendors').style.display = 'block';
 
         document.querySelectorAll('.admin-only-col').forEach(col => col.style.display = 'table-cell');
@@ -112,7 +111,6 @@ function applyPortalBranding() {
 
         // Hide Admin Sections & Columns
         document.getElementById('sidebarItemVendors').style.display = 'none';
-        document.getElementById('sidebarItemReports').style.display = 'none';
         document.getElementById('sectionAdminVendors').style.display = 'none';
 
         document.querySelectorAll('.admin-only-col').forEach(col => col.style.display = 'none');
@@ -159,6 +157,7 @@ function navigate(viewId) {
         'catalog': 'pageCatalog',
         'add-product': 'pageAddProduct',
         'analytics': 'pageAnalytics',
+        'reports': 'pageReports',
         'media': 'pageMedia',
         'settings': 'pageSettings'
     };
@@ -174,6 +173,8 @@ function navigate(viewId) {
     if (viewId === 'dashboard') fetchDashboardData();
     if (viewId === 'vendors') fetchVendorsData();
     if (viewId === 'catalog') fetchCatalogData();
+    if (viewId === 'analytics') fetchAnalyticsData();
+    if (viewId === 'reports') loadReports();
     if (viewId === 'media') fetchMediaData();
     if (viewId === 'settings') populateSettingsData();
     if (viewId === 'analytics') fetchAnalyticsData();
@@ -852,3 +853,156 @@ function executeLogout() {
     localStorage.removeItem('shopsense_admin_token');
     window.location.href = '/frontend/login.html';
 }
+
+
+let revenueChartInstance = null;
+let unitsChartInstance = null;
+let performanceChartInstance = null;
+
+let topProductsChartInstance = null;
+
+async function loadReports() {
+    if (!currentUser) return;
+    const isAdmin = currentUser.role === 'Admin';
+    const targetVendorId = isAdmin ? null : currentUser.id;
+
+    try {
+        const data = await API.getReportsData(targetVendorId);
+
+        // Update New KPI Cards
+        // (Removed from layout per final user request, but variables exist in API)
+        const revTotal = '$' + parseFloat(data.total_revenue || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+        // Revenue Trend Chart
+        const trendDates = data.trends.map(t => t.date);
+        const trendRevenues = data.trends.map(t => t.revenue);
+        const trendUnits = data.trends.map(t => t.units_sold);
+
+        if (revenueChartInstance) revenueChartInstance.destroy();
+        const ctxRev = document.getElementById('revenueChart').getContext('2d');
+        revenueChartInstance = new Chart(ctxRev, {
+            type: 'line',
+            data: {
+                labels: trendDates,
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: trendRevenues,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Units Sold Trend Chart
+        if (unitsChartInstance) unitsChartInstance.destroy();
+        const ctxUnits = document.getElementById('unitsChart').getContext('2d');
+        unitsChartInstance = new Chart(ctxUnits, {
+            type: 'bar',
+            data: {
+                labels: trendDates,
+                datasets: [{
+                    label: 'Units Sold',
+                    data: trendUnits,
+                    backgroundColor: '#16a34a'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Top Products by Sales Chart
+        // Sort products descending by units_sold and take top 5
+        const sortedProducts = [...data.products].sort((a, b) => b.units_sold - a.units_sold).slice(0, 5);
+        const topProdNames = sortedProducts.map(p => p.product_name.substring(0, 20) + (p.product_name.length > 20 ? '...' : ''));
+        const topProdUnits = sortedProducts.map(p => p.units_sold);
+
+        if (topProductsChartInstance) topProductsChartInstance.destroy();
+        const ctxTop = document.getElementById('topProductsChart').getContext('2d');
+        topProductsChartInstance = new Chart(ctxTop, {
+            type: 'bar',
+            data: {
+                labels: topProdNames,
+                datasets: [{
+                    label: 'Units Sold',
+                    data: topProdUnits,
+                    backgroundColor: '#3b82f6'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Product / Category Performance Chart (Doughnut)
+        const catNames = data.categories.map(c => c.category);
+        const catRevenues = data.categories.map(c => c.revenue);
+        
+        if (performanceChartInstance) performanceChartInstance.destroy();
+        const ctxPerf = document.getElementById('performanceChart').getContext('2d');
+        performanceChartInstance = new Chart(ctxPerf, {
+            type: 'doughnut',
+            data: {
+                labels: catNames,
+                datasets: [{
+                    data: catRevenues,
+                    backgroundColor: [
+                        '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#06b6d4', '#64748b'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Recent Transactions Table
+        const txBody = document.getElementById('recentTransactionsBody');
+        txBody.innerHTML = '';
+        if (data.recent_transactions && data.recent_transactions.length > 0) {
+            data.recent_transactions.forEach(tx => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${tx.date}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${tx.product_name.substring(0, 15)}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${tx.quantity}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #059669;">$${tx.amount.toFixed(2)}</td>
+                `;
+                txBody.appendChild(tr);
+            });
+        } else {
+            txBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 10px; color: var(--text-muted);">No recent transactions</td></tr>`;
+        }
+
+    } catch (err) {
+        console.error('Failed to load reports data:', err);
+    }
+}
+
+function downloadReportsExcel() {
+    if (!currentUser) return;
+    const isAdmin = currentUser.role === 'Admin';
+    const targetVendorId = isAdmin ? null : currentUser.id;
+    API.downloadReportsExcel(targetVendorId);
+}
+
+

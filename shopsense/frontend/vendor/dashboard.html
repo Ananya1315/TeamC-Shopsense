@@ -53,8 +53,8 @@
                     <span>Analytics &amp; AI</span>
                 </a>
             </li>
-            <li class="sidebar-item" id="sidebarItemReports" style="display: none;">
-                <a class="sidebar-link" id="menuReports" onclick="navigate('analytics')">
+            <li class="sidebar-item" id="sidebarItemReports">
+                <a class="sidebar-link" id="menuReports" onclick="navigate('reports')">
                     <span>📑</span>
                     <span>Reports</span>
                 </a>
@@ -403,11 +403,6 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="font-size: 20px; font-weight: 800;">Customer Analytics & Segmentation</h3>
-                    <button class="btn-emerald" style="width: auto; padding: 6px 16px; font-size: 12px;" onclick="executeSeedData()">Seed Historical Data (Test)</button>
-                </div>
-                
                 <div id="customerSegmentsBox" class="analytics-grid" style="margin-top: 16px;">
                     <!-- Segments loaded here -->
                 </div>
@@ -418,6 +413,77 @@
                 
                 <div id="recommendationsBox" class="analytics-grid" style="margin-top: 16px; grid-template-columns: repeat(3, 1fr);">
                     <!-- Recommendations loaded here -->
+                </div>
+            </section>
+
+            <!-- MILESTONE 3: REPORTS & BI VIEW -->
+            <section id="pageReports" class="page-view" style="display: none;">
+                <!-- 1. HEADER -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 24px; font-weight: 800;">Business Intelligence &amp; Reports</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary);">Historical sales trends, category performance, and benchmarking.</p>
+                    </div>
+                </div>
+
+                <!-- 2. REVENUE TREND (Full Width) -->
+                <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Revenue Trend</h3>
+                    <div style="height: 300px; width: 100%; position: relative;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 3. SALES / UNITS SOLD TREND (Full Width) -->
+                <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Sales / Units Sold Trend</h3>
+                    <div style="height: 300px; width: 100%; position: relative;">
+                        <canvas id="unitsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 4. TOP PRODUCTS BY SALES (Full Width) -->
+                <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Top Products by Sales</h3>
+                    <div style="height: 280px; width: 100%; position: relative;">
+                        <canvas id="topProductsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 5. CATEGORY & RECENT TRANSACTIONS (Side-by-Side) -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 32px;">
+                    <div class="glass-panel" style="padding: 20px;">
+                        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Sales by Category</h3>
+                        <div style="height: 250px; width: 100%; position: relative;">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel" style="padding: 20px;">
+                        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Recent Transactions</h3>
+                        <div style="overflow-y: auto; max-height: 250px;">
+                            <table class="catalog-table" style="font-size: 12px; min-width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 8px;">Date</th>
+                                        <th style="padding: 8px;">Product</th>
+                                        <th style="padding: 8px;">Qty</th>
+                                        <th style="padding: 8px;">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentTransactionsBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 6. EXCEL EXPORT -->
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <button class="btn-emerald" onclick="downloadReportsExcel()" style="width: auto; padding: 12px 24px; font-size: 14px; background: var(--dark-slate); color: white;">
+                        ↓ Export Report (Excel)
+                    </button>
                 </div>
             </section>
 
@@ -543,7 +609,8 @@
     </div>
 </div>
 
-<script src="/frontend/js/api.js?v=7"></script>
-<script src="/frontend/js/app.js?v=7"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/frontend/js/api.js?v=9"></script>
+<script src="/frontend/js/app.js?v=9"></script>
 </body>
 </html>
