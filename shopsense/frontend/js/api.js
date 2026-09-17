@@ -184,5 +184,23 @@ const API = {
     downloadReportsExcel(vendorId = null) {
         const url = vendorId ? `${API_BASE_URL}/analytics/reports/excel?vendor_id=${vendorId}` : `${API_BASE_URL}/analytics/reports/excel`;
         window.open(url, '_blank');
+    },
+
+    async askDataAnalyst(question, role, vendorId = null) {
+        const response = await fetch(`${API_BASE_URL}/ai/analyst`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: question,
+                role: role,
+                vendor_id: vendorId ? parseInt(vendorId) : null
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to query AI data analyst');
+        }
+        return await response.json();
     }
 };
+

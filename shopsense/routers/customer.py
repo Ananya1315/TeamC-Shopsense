@@ -27,5 +27,25 @@ def get_customers(db: Session = Depends(get_db)):
     return crud.get_customers(db)
 
 @router.post("/order", response_model=schema.OrderResponse)
-def place_order(order: schema.OrderCreate, db: Session = Depends(get_db)):
-    return crud.place_order(db, order)
+async def place_order(order: schema.OrderCreate, db: Session = Depends(get_db)):
+    transaction = crud.place_order(db, order)
+    try:
+        from models import Product
+        from routers.websocket import manager
+
+        prod_name = db.query(Product.name).filter(Product.id == transaction.product_id).scalar() or "Product"
+        await manager.broadcast_new_sale({
+            "transaction_id": transaction.id,
+            "product_id": transaction.product_id,
+            "product_name": prod_name,
+            "vendor_id": transaction.vendor_id,
+            "customer_id": transaction.customer_id,
+            "quantity": transaction.quantity,
+            "total_amount": round(float(transaction.total_amount), 2),
+            "timestamp": transaction.timestamp.isoformat() if transaction.timestamp else ""
+        })
+    except Exception as e:
+        import logging
+        logging.getLogger("shopsense.websocket").error(f"WebSocket broadcast failed safely: {e}")
+
+    return transaction

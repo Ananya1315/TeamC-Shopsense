@@ -5,40 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Shop - ShopSense</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/frontend/css/style.css">
     <style>
-        body { background-color: var(--bg-light); padding: 20px; }
+        body { background-color: var(--bg-light, #f8fafc); padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { font-size: 24px; font-weight: 800; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .header h1 { font-size: 24px; font-weight: 800; color: #0f172a; }
+        .user-pill-tag { display: inline-flex; align-items: center; gap: 10px; background: white; padding: 6px 14px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .product-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .product-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
         .product-img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; background: #f1f5f9; }
-        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 5px; }
-        .product-price { color: var(--primary); font-weight: 800; font-size: 18px; margin-bottom: 10px; }
-        .buy-btn { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
-        .buy-btn:hover { background: var(--primary-dark); }
+        .product-title { font-weight: 700; font-size: 16px; margin-bottom: 5px; color: #0f172a; }
+        .product-price { color: var(--primary, #059669); font-weight: 800; font-size: 18px; margin-bottom: 10px; }
+        .buy-btn { width: 100%; padding: 10px; background: var(--primary, #059669); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+        .buy-btn:hover { background: var(--primary-hover, #047857); }
         .buy-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
         
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .auth-box { background: white; padding: 30px; border-radius: 12px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .auth-box input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .auth-box { background: white; padding: 30px; border-radius: 12px; width: 400px; max-width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .auth-box input { width: 100%; padding: 10px 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .auth-box input:focus { outline: none; border-color: #059669; }
     </style>
 </head>
 <body>
 
+    <!-- Customer Registration / Identification Modal -->
     <div id="authOverlay">
         <div class="auth-box">
-            <h2 style="margin-bottom: 20px; font-weight: 800;">Welcome to ShopSense</h2>
+            <h2 style="margin-bottom: 10px; font-weight: 800; color: #0f172a;">Welcome to ShopSense</h2>
             <p style="margin-bottom: 20px; font-size: 14px; color: #64748b;">Please enter your details to start shopping and help us track your orders.</p>
             <input type="text" id="custName" placeholder="Full Name" required>
             <input type="email" id="custEmail" placeholder="Email Address" required>
             <button class="buy-btn" onclick="startShopping()">Start Shopping</button>
         </div>
+    </div>
+
+    <!-- Main Marketplace Container -->
     <div class="container">
         <div class="header">
-            <h1>ShopSense Marketplace</h1>
-            <div id="userInfo" style="font-weight: 600;"></div>
+            <div>
+                <h1>ShopSense Marketplace</h1>
+                <p style="font-size: 13px; color: #64748b; margin-top: 2px;">Browse and purchase products from verified marketplace sellers</p>
+            </div>
+            <div id="userInfo"></div>
+        </div>
+
+        <!-- RAG AI Shopping Assistant Card -->
+        <div class="ai-assistant-card" style="background: white; border-radius: 14px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 30px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);">🤖</div>
+                    <div>
+                        <div style="font-weight: 800; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                            ShopSense AI Shopping Assistant
+                            <span style="font-size: 10px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 12px;">RAG-POWERED</span>
+                        </div>
+                        <p style="font-size: 12px; color: #64748b; margin-top: 2px;">Ask anything about products, categories, specs, pricing, or stock availability</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Question Chips -->
+            <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
+                <button type="button" class="chip-btn" onclick="askPreset('What products are available?')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.15s;">💡 What products are available?</button>
+                <button type="button" class="chip-btn" onclick="askPreset('Show me products in the footwear category.')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.15s;">👟 Footwear category</button>
+                <button type="button" class="chip-btn" onclick="askPreset('Tell me about the laptop.')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.15s;">💻 Laptop specs & price</button>
+                <button type="button" class="chip-btn" onclick="askPreset('Which products have low stock?')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.15s;">⚠️ Low stock products</button>
+            </div>
+
+            <!-- Question Input Area -->
+            <form onsubmit="handleAskAssistant(event)" style="display: flex; gap: 10px; margin-bottom: 14px;">
+                <input type="text" id="aiQuestionInput" placeholder="Ask about products, e.g., 'Tell me about the handbag' or 'What audio items do you sell?'..." style="flex: 1; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s;" required>
+                <button type="submit" id="aiAskBtn" style="padding: 12px 24px; background: #059669; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: background 0.2s;">
+                    <span>Ask Assistant</span>
+                    <span id="aiBtnSpinner" style="display: none;">⏳</span>
+                </button>
+            </form>
+
+            <!-- AI Response Box -->
+            <div id="aiResponseBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px;">Assistant Response</span>
+                    <button type="button" onclick="clearAiResponse()" style="border: none; background: none; font-size: 11px; color: #94a3b8; cursor: pointer;">Dismiss</button>
+                </div>
+                <div id="aiAnswerText" style="font-size: 13px; color: #1e293b; line-height: 1.6; white-space: pre-line;"></div>
+                <div id="aiMatchedProducts" style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="aiLoadingIndicator" style="display: none; padding: 16px; text-align: center; color: #64748b; font-size: 13px;">
+                <span style="display: inline-block; animation: spin 1s linear infinite; margin-right: 8px;">🔄</span> Retrieving catalog context and generating response...
+            </div>
+
+            <!-- Error Box -->
+            <div id="aiErrorBox" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-top: 10px;"></div>
         </div>
 
         <div class="product-grid" id="productGrid">
@@ -46,26 +106,75 @@
         </div>
     </div>
 
-    <script src="js/api.js"></script>
+    <script src="/frontend/js/api.js"></script>
     <script>
+        const API_BASE = window.API_BASE_URL || window.location.origin;
         let currentCustomer = null;
 
+        document.addEventListener('DOMContentLoaded', () => {
+            // Restore existing customer session from localStorage if available
+            const savedCust = localStorage.getItem('shopsense_customer');
+            if (savedCust) {
+                try {
+                    currentCustomer = JSON.parse(savedCust);
+                    renderCustomerInfo();
+                    document.getElementById('authOverlay').style.display = 'none';
+                } catch (e) {
+                    currentCustomer = null;
+                }
+            }
+
+            // Always load products so the catalog is ready
+            loadProducts();
+        });
+
+        function renderCustomerInfo() {
+            const infoDiv = document.getElementById('userInfo');
+            if (currentCustomer) {
+                infoDiv.innerHTML = `
+                    <div class="user-pill-tag">
+                        <span style="font-weight: 700; color: #0f172a; font-size: 13px;">👤 ${currentCustomer.name}</span>
+                        <button onclick="logoutCustomer()" style="border: none; background: none; color: #ef4444; font-size: 11px; font-weight: 700; cursor: pointer; margin-left: 4px;">Switch</button>
+                    </div>
+                `;
+            } else {
+                infoDiv.innerHTML = `
+                    <button class="buy-btn" style="width: auto; padding: 6px 14px; font-size: 13px;" onclick="openAuthModal()">Sign In</button>
+                `;
+            }
+        }
+
+        function openAuthModal() {
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
+
+        function logoutCustomer() {
+            localStorage.removeItem('shopsense_customer');
+            currentCustomer = null;
+            renderCustomerInfo();
+            openAuthModal();
+        }
+
         async function startShopping() {
-            const name = document.getElementById('custName').value;
-            const email = document.getElementById('custEmail').value;
-            if (!name || !email) return alert("Please enter name and email");
+            const name = document.getElementById('custName').value.trim();
+            const email = document.getElementById('custEmail').value.trim();
+            if (!name || !email) return alert("Please enter both your name and email address.");
 
             try {
-                const res = await fetch(`${API_BASE_URL}/customer/register`, {
+                const res = await fetch(`${API_BASE}/customer/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email })
                 });
-                if (!res.ok) throw new Error("Failed to register");
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || "Failed to register");
+                }
                 currentCustomer = await res.json();
+                localStorage.setItem('shopsense_customer', JSON.stringify(currentCustomer));
                 
                 document.getElementById('authOverlay').style.display = 'none';
-                document.getElementById('userInfo').innerText = `Welcome, ${currentCustomer.name}`;
+                renderCustomerInfo();
                 loadProducts();
             } catch (e) {
                 alert(e.message);
@@ -73,14 +182,14 @@
         }
 
         async function loadProducts() {
+            const grid = document.getElementById('productGrid');
             try {
-                // Fetch all active products
-                const res = await fetch(`${API_BASE_URL}/admin/products`);
+                const res = await fetch(`${API_BASE}/products/`);
+                if (!res.ok) throw new Error("Failed to load marketplace products");
                 const products = await res.json();
-                const grid = document.getElementById('productGrid');
                 
-                if (products.length === 0) {
-                    grid.innerHTML = "<p>No products available right now.</p>";
+                if (!products || products.length === 0) {
+                    grid.innerHTML = "<p style='color: #64748b; padding: 30px;'>No products available right now.</p>";
                     return;
                 }
 
@@ -89,12 +198,14 @@
                     const outOfStock = p.stock_quantity <= 0;
                     return `
                         <div class="product-card">
-                            <img src="${imgUrl}" class="product-img" alt="${p.name}">
-                            <div style="font-size: 12px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; font-weight: 700;">${p.category}</div>
-                            <div class="product-title">${p.name}</div>
-                            <div class="product-price">$${p.price.toFixed(2)}</div>
-                            <div style="font-size: 13px; margin-bottom: 15px; color: ${outOfStock ? '#ef4444' : '#10b981'}; font-weight: 600;">
-                                ${outOfStock ? 'Out of Stock' : `In Stock: ${p.stock_quantity}`}
+                            <div>
+                                <img src="${imgUrl}" class="product-img" alt="${p.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmMmYyZjIiLz48L3N2Zz4='">
+                                <div style="font-size: 12px; color: #64748b; margin-bottom: 4px; text-transform: uppercase; font-weight: 700;">${p.category || 'General'}</div>
+                                <div class="product-title">${p.name}</div>
+                                <div class="product-price">$${parseFloat(p.price).toFixed(2)}</div>
+                                <div style="font-size: 13px; margin-bottom: 15px; color: ${outOfStock ? '#ef4444' : '#10b981'}; font-weight: 600;">
+                                    ${outOfStock ? 'Out of Stock' : `In Stock: ${p.stock_quantity}`}
+                                </div>
                             </div>
                             <button class="buy-btn" ${outOfStock ? 'disabled' : ''} onclick="placeOrder(${p.id})">
                                 ${outOfStock ? 'Unavailable' : 'Buy 1 Item'}
@@ -104,13 +215,18 @@
                 }).join('');
             } catch (e) {
                 console.error(e);
+                grid.innerHTML = `<p style="color: #ef4444; padding: 20px;">Error loading products: ${e.message}</p>`;
             }
         }
 
         async function placeOrder(productId) {
-            if (!currentCustomer) return;
+            if (!currentCustomer) {
+                openAuthModal();
+                alert("Please enter your name and email to place an order.");
+                return;
+            }
             try {
-                const res = await fetch(`${API_BASE_URL}/customer/order`, {
+                const res = await fetch(`${API_BASE}/customer/order`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -120,11 +236,92 @@
                     })
                 });
                 
-                if (!res.ok) throw new Error("Order failed");
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || "Order placement failed");
+                }
                 alert("Order placed successfully!");
-                loadProducts(); // Refresh stock
+                loadProducts(); // Refresh product stock
             } catch (e) {
                 alert(e.message);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // AI Shopping Assistant Client Logic
+        // -------------------------------------------------------------
+        function askPreset(question) {
+            document.getElementById('aiQuestionInput').value = question;
+            handleAskAssistant();
+        }
+
+        function clearAiResponse() {
+            document.getElementById('aiResponseBox').style.display = 'none';
+            document.getElementById('aiErrorBox').style.display = 'none';
+        }
+
+        async function handleAskAssistant(event) {
+            if (event) event.preventDefault();
+            const input = document.getElementById('aiQuestionInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const askBtn = document.getElementById('aiAskBtn');
+            const spinner = document.getElementById('aiBtnSpinner');
+            const loading = document.getElementById('aiLoadingIndicator');
+            const responseBox = document.getElementById('aiResponseBox');
+            const answerText = document.getElementById('aiAnswerText');
+            const matchedProducts = document.getElementById('aiMatchedProducts');
+            const errorBox = document.getElementById('aiErrorBox');
+
+            // Set loading state
+            askBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            loading.style.display = 'block';
+            responseBox.style.display = 'none';
+            errorBox.style.display = 'none';
+
+            try {
+                const res = await fetch(`${API_BASE}/ai/assistant`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.detail || "Assistant service currently unavailable");
+                }
+
+                const data = await res.json();
+                loading.style.display = 'none';
+
+                // Format markdown-like bold and bullet formatting
+                let formatted = data.answer
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                answerText.innerHTML = formatted;
+
+                // Render matching product badges if any
+                matchedProducts.innerHTML = '';
+                if (data.products && data.products.length > 0) {
+                    matchedProducts.innerHTML = data.products.map(p => `
+                        <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 11px; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            <span style="font-weight: 700; color: #0f172a;">${p.name}</span>
+                            <span style="color: #059669; font-weight: 700;">$${parseFloat(p.price).toFixed(2)}</span>
+                            <span style="color: #64748b;">(${p.stock_quantity > 0 ? p.stock_quantity + ' in stock' : 'Out of stock'})</span>
+                        </div>
+                    `).join('');
+                }
+
+                responseBox.style.display = 'block';
+            } catch (err) {
+                loading.style.display = 'none';
+                errorBox.textContent = "Error: " + err.message;
+                errorBox.style.display = 'block';
+            } finally {
+                askBtn.disabled = false;
+                spinner.style.display = 'none';
             }
         }
     </script>

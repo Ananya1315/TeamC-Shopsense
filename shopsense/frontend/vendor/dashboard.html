@@ -90,7 +90,36 @@
                 <input type="text" class="search-input" id="topGlobalSearch" placeholder="Search catalog, vendors or analytics..." oninput="handleGlobalSearch(this.value)">
             </div>
 
-            <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div id="wsStatusBadge" title="Real-Time WebSocket Connection" style="display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 20px;">
+                    <span id="wsStatusDot" style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                    <span id="wsStatusText">LIVE</span>
+                </div>
+
+                <!-- Notification Bell Icon & Dropdown -->
+                <div class="notification-bell-wrap" id="notificationBellWrap" style="position: relative;">
+                    <button id="notifBellBtn" onclick="toggleNotificationDropdown()" style="position: relative; background: white; border: 1px solid #e2e8f0; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" title="Notifications">
+                        🔔
+                        <span id="notifBadge" style="display: none; position: absolute; top: -3px; right: -3px; background: #ef4444; color: white; border-radius: 10px; font-size: 10px; font-weight: 800; min-width: 17px; height: 17px; line-height: 14px; text-align: center; padding: 0 3px; border: 2px solid white; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);">0</span>
+                    </button>
+                    
+                    <!-- Notification Dropdown Panel -->
+                    <div id="notifDropdown" style="display: none; position: absolute; right: 0; top: 46px; width: 340px; max-width: 90vw; background: white; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; z-index: 1000; overflow: hidden;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;">
+                            <div style="font-weight: 800; font-size: 13px; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                                <span>Notifications</span>
+                                <span id="notifCountLabel" style="background: #e2e8f0; color: #475569; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px;">0</span>
+                            </div>
+                            <button onclick="clearAllNotifications()" style="background: none; border: none; font-size: 11px; color: #64748b; cursor: pointer; font-weight: 600; padding: 2px 6px; border-radius: 4px;">Clear all</button>
+                        </div>
+                        <div id="notifList" style="max-height: 320px; overflow-y: auto; padding: 4px 0;">
+                            <div id="emptyNotifMsg" style="padding: 24px; text-align: center; color: #94a3b8; font-size: 12px;">
+                                No new notifications
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <button class="btn-emerald" id="topbarAddBtn" style="width: auto; padding: 9px 18px; font-size: 13px;" onclick="navigate('add-product')">
                     + Add Product
                 </button>
@@ -426,6 +455,61 @@
                     </div>
                 </div>
 
+                <!-- ADVANCED FEATURE 3: HYBRID AI BUSINESS DATA ANALYST -->
+                <div class="glass-panel" style="padding: 24px; margin-bottom: 24px; border: 1px solid #c7d2fe; background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 26px;">🧠</span>
+                            <div>
+                                <h3 style="font-size: 18px; font-weight: 800; color: #1e1b4b; margin: 0;">Hybrid AI Business Data Analyst</h3>
+                                <p style="font-size: 13px; color: #475569; margin: 2px 0 0 0;">Ask natural-language questions across ShopSense store data and current real-world market intelligence.</p>
+                            </div>
+                        </div>
+                        <span style="font-size: 11px; font-weight: 700; background: #4f46e5; color: white; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.5px;">Hybrid AI Analyst</span>
+                    </div>
+
+                    <!-- Suggested Query Chips -->
+                    <div id="analystChips" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+                        <!-- Injected dynamically by app.js based on role -->
+                    </div>
+
+                    <!-- Question Input Form -->
+                    <form id="analystForm" onsubmit="handleAskAnalyst(event)" style="display: flex; gap: 10px; margin-bottom: 0;">
+                        <input type="text" id="analystQuestionInput" class="custom-input" placeholder="e.g. What was the best sold product? or What are the latest smartphones?" style="flex: 1; font-size: 14px; background: white;" required>
+                        <button type="submit" id="analystSubmitBtn" class="btn-emerald" style="background: #4f46e5; width: auto; padding: 0 24px; white-space: nowrap;">
+                            <span>Ask Analyst</span>
+                        </button>
+                    </form>
+
+                    <!-- Response Box -->
+                    <div id="analystResponseCard" style="display: none; background: white; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 18px; margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="color: #1e293b; font-size: 14px;">Analytical Answer:</strong>
+                                <span id="analystSourceBadge" style="display: none; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;"></span>
+                            </div>
+                            <div id="analystSqlBadge" style="display: none; font-size: 11px; background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 4px; font-family: monospace; max-width: 100%; word-break: break-all;"></div>
+                        </div>
+                        <div id="analystAnswerText" style="font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 14px;"></div>
+                        
+                        <!-- Dynamic SQL Result Data Table -->
+                        <div id="analystTableWrapper" style="display: none; overflow-x: auto; max-height: 240px; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 14px;">
+                            <table class="catalog-table" id="analystDataTable" style="font-size: 12px; margin: 0; width: 100%;">
+                                <thead id="analystTableHead"></thead>
+                                <tbody id="analystTableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Web Search Sources & Citations Box -->
+                        <div id="analystCitationsBox" style="display: none; margin-top: 14px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+                            <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <span>🔗</span> Sources &amp; Citations:
+                            </div>
+                            <div id="analystCitationsList" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 2. REVENUE TREND (Full Width) -->
                 <div class="glass-panel" style="padding: 20px; margin-bottom: 24px;">
                     <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 16px;">Revenue Trend</h3>
@@ -610,7 +694,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="/frontend/js/api.js?v=9"></script>
-<script src="/frontend/js/app.js?v=9"></script>
+<script src="/frontend/js/api.js?v=13"></script>
+<script src="/frontend/js/app.js?v=13"></script>
 </body>
 </html>

@@ -12,6 +12,8 @@ from routers.admin import router as admin_router
 from routers.product import router as product_router
 from routers.analytics import router as analytics_router
 from routers.customer import router as customer_router
+from routers.websocket import router as websocket_router
+from routers.ai import router as ai_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -45,6 +47,8 @@ app.include_router(admin_router)
 app.include_router(product_router)
 app.include_router(analytics_router)
 app.include_router(customer_router)
+app.include_router(websocket_router)
+app.include_router(ai_router)
 
 # Mount frontend static directory
 frontend_dir = os.path.join(os.path.dirname(__file__), "frontend")
